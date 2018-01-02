@@ -1,0 +1,33 @@
+#!/bin/sh -e
+### BEGIN INIT INFO
+# Provides:          svncsvr
+# Required-Start:    networking
+# Required-Stop:
+# Default-Start:     3 4 5
+# Default-Stop:      0 6
+### END INIT INFO
+
+PATH="$PATH:/usr/X11R6/bin/"
+export USER="zzy"
+
+# The name that the VNC Desktop will have.
+. /lib/lsb/init-functions
+
+case "$1" in
+start)
+    su ${USER} -c "/usr/bin/svncsvr & 
+    echo $! >/tmp/svncsvr.pid"
+    mv -f /tmp/svncsvr.pid /var/run/svncsvr.pid
+;;
+
+stop)
+    killall x11vnc
+;;
+
+restart)
+$0 stop
+$0 start
+;;
+esac
+
+exit 0
