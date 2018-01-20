@@ -27,15 +27,15 @@ die()
 CONFIG_PATH="$HOME/.yurl.conf"
 parse_config()
 {
-    local PARAMETER=$1
-    local WHITESPACE=' 	'
+     PARAMETER=$1
+     WHITESPACE=' 	'
     sed -n "/$PARAMETER:/s/[$WHITESPACE]*$PARAMETER:[$WHITESPACE]*\([.0-9a-zA-Z]*\)[$WHITESPACE]*/\1/p" $CONFIG_PATH | tr -d '\n'
 }
 
 update_config()
 {
-    local PARAMETER=$1
-    local VALUE=$2
+     PARAMETER=$1
+     VALUE=$2
 
     sed -n "/$PARAMETER:/s/[$WHITESPACE]*$PARAMETER:[$WHITESPACE]*\([.0-9a-zA-Z]*\)[$WHITESPACE]*/$VALUE/p" $CONFIG_PATH  >"$CONFIG_PATH.tmp"
     mv "$CONFIG_PATH.tmp" $CONFIG_PATH
@@ -99,8 +99,8 @@ ERRNO_NOTFOUND=1
 RESULT=
 expand_shorturl()
 {
-    local SHORTURL_REF=$1
-    local REPLY=`curl --max-time 5 -G -s "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=expand&shorturl=$SHORTURL_REF&format=simple"`
+     SHORTURL_REF=$1
+     REPLY=`curl --max-time 5 -G -s "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=expand&shorturl=$SHORTURL_REF&format=simple"`
     if [ $? -ne 0 ]; then return $ERRNO_NETWORK
     elif [ "$REPLY" = 'not found' ]
     then return $ERRNO_NOTFOUND
@@ -112,8 +112,8 @@ expand_shorturl()
 
 delete_shorturl()
 {
-    local SHORTURL_REF=$1
-    local REPLY=`curl --max-time 5 -G -s "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=delete&shorturl=$SHORTURL_REF&format=simple"`
+     SHORTURL_REF=$1
+     REPLY=`curl --max-time 5 -G -s "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=delete&shorturl=$SHORTURL_REF&format=simple"`
     if [ $? -ne 0 ]; then return $ERRNO_NETWORK
     elif [ -z "$REPLY" ]
     then return $ERRNO_NOTFOUND
@@ -123,10 +123,10 @@ delete_shorturl()
 
 map_shorturl()
 {
-    local TARGET=$1
-    local SHORTURL_REF=$2
-    local REPLY=`curl --max-time 5 -G -s --data-urlencode "url=$TARGET" "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=shorturl&keyword=$SHORTURL_REF&format=simple"`
-    local REPLY_REF=`printf "$REPLY" | sed -e "s:^.*/::" | tr -d '\n'`
+     TARGET=$1
+     SHORTURL_REF=$2
+     REPLY=`curl --max-time 5 -G -s --data-urlencode "url=$TARGET" "http://$SERVER/yourls-api.php?signature=$SIGNATURE&action=shorturl&keyword=$SHORTURL_REF&format=simple"`
+     REPLY_REF=`printf "$REPLY" | sed -e "s:^.*/::" | tr -d '\n'`
     if [ $? -ne 0 ]; then return $ERRNO_NETWORK
     elif [ -z "$REPLY" ]; then return $ERRNO_DEFINED
     elif ! [ "$SHORTURL_REF" = "$REPLY_REF" ]; then return $ERRNO_DEFINED
