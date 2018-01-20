@@ -20,11 +20,5 @@ config: ~/.yurl.conf
 
 ~/.yurl.conf:
 	@printf "Setup Configuration for YURL\n"
-	@printf "YURL Server:"
-	@read SERVER
-	@printf "\n"
-	@printf "YURL Signature:"
-	@read SIGNATURE
-	@printf "\n"
-	printf "server: %s\nsignature: %s\n" >~$@
-	@printf "Done. To reconfigure yurl, run 'make config'\n"
+	@sh -c "printf 'YURL Server: '; read SERVER; printf 'YURL Signature: '; read SIGNATURE; printf 'server: %s\nsignature: %s\n' "$$SERVER" "$$SIGNATURE" >$@"
+	@printf "Done. To reconfigure yurl, run 'make remove && make config'\n"
