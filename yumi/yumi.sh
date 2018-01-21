@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-# yurl.sh
-# CLI for YourURL shortener.
+# yumi.sh
+# YUMI - YoUrls Manipulation Interface
 #
 
-USAGE="Usage: yurl [-fdx] [-t <server>] [-s <signature>] [-m <destination>] <keyword/shorturl...>.
+USAGE="Usage: yumi [-fdx] [-t <server>] [-s <signature>] [-m <destination>] <keyword/shorturl...>.
 -f - force action, even if it means that the action is destructive
 -x - expand shortened url by 'keyword' or 'shorturl' to its long form.
 -d - delete url shortcut by the name of 'keyword' or 'shorturl'
@@ -24,7 +24,7 @@ die()
 }
 
 #Load Configuration
-CONFIG_PATH="$HOME/.yurl.conf"
+CONFIG_PATH="$HOME/.yumi.conf"
 parse_config()
 {
      PARAMETER=$1
