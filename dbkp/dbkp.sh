@@ -16,7 +16,7 @@ Options:
 # Parse Arugments
 SOURCES=""
 DEST=""
-RSYNC_OPT="-ah --hard-links --progress --stats --verbose --delete"
+RSYNC_OPT="--archive --links --copy-dirlinks --copy-unsafe-links --update --human-readable --hard-links --progress --stats --verbose --delete"
 
 # Command Line Options
 while getopts "qhnz" OPT
@@ -59,10 +59,10 @@ echo "dest=$DEST"
 for SRC in $SOURCES
 do
     SRC_BASE="$(basename $SRC)"
-    NEXT_BKP="$SRC_BASE.$(date +%Y_%m_%d__%H_%M)"
+    NEXT_BKP="$SRC_BASE.$(date +%Y_%m_%d__%H)"
 
     # Find previous backup as base for new backup
-    PREV_BKP_PATHS="$(find $DEST -maxdepth 2 -type d -name $SRC_BASE'.????_??_??__??_??' -print)"
+    PREV_BKP_PATHS="$(find $DEST -maxdepth 2 -type d -name $SRC_BASE'.????_??_??__??' -print)"
     PREV_BKPS=""
 
     for BKP_PATH in $PREV_BKP_PATHS
@@ -75,10 +75,10 @@ do
     # Perform backup with RSYNC
     if [ -z $PREV_BKP ]
     then 
-        echo rsync $RSYNC_OPT $SRC/ $DEST/$NEXT_BKP
+        printf "[dbkp]: Performing full backup of $SRC..."
         rsync $RSYNC_OPT $SRC/ $DEST/$NEXT_BKP
     else
-        echo rsync $RSYNC_OPT --link-dest=$DEST/$PREV_BKP $SRC/ $DEST/$NEXT_BKP
+        printf "[dbkp]: Performing incremental  backup of $SRC..."
         rsync $RSYNC_OPT --link-dest="../$PREV_BKP" $SRC/ $DEST/$NEXT_BKP
     fi
 
