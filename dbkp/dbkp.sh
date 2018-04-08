@@ -63,14 +63,13 @@ do
 
     # Find previous backup as base for new backup
     PREV_BKP_PATHS="$(find $DEST -maxdepth 2 -type d -name $SRC_BASE'.????_??_??__??_??' -print)"
-    echo $PREV_BKP_PATHS
     PREV_BKPS=""
 
     for BKP_PATH in $PREV_BKP_PATHS
     do PREV_BKPS="$PREV_BKPS
         $(basename $BKP_PATH)"
     done
-    PREV_BKP="$(printf "$PREV_BKPS" | sort -rt "." | head -n 1  | sed -e 's/^[ \t]*//')"
+    PREV_BKP="$(printf "$PREV_BKPS" | sort -rt "." | head -n 1  | sed -e 's/^[ ]*//')"
     
     
     # Perform backup with RSYNC
