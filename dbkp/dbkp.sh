@@ -3,12 +3,12 @@
 # Yet Another RSYNC based backup script 
 #
 
-USAGE_INFO="Usage: dbkp [-cpq] <src, src2, ...> <dest>
+USAGE_INFO="Usage: dbkp [-qhnz] <src, src2, ...> <dest>
 Produce a time stamped incremental backup of 'srcs' to 'dest', or if no prior 
 backups exists in 'dest', perform a time stamped full backup
 Options: 
 -q      Super slient stealth mode, only print error messages
--h      Print this usage infomationb
+-h      Print this usage infomation
 -n      Trial run, dont actually do anything
 -z      Enable of compression to during transmittion 
 "
@@ -58,11 +58,12 @@ echo "dest=$DEST"
 # Backup with timestamp
 for SRC in $SOURCES
 do
-    NEXT_BKP="$(basename $SRC).$(date +%Y_%m_%d__%H_%M)"
-    printf "\033[1m\033[0;32m[dbkp]: Backing up $SRC as $NEXT_BKP .... \033[0m\n"
+    SRC_BASE="$(basename $SRC)"
+    NEXT_BKP="$SRC_BASE.$(date +%Y_%m_%d__%H_%M)"
 
     # Find previous backup as base for new backup
-    PREV_BKP_PATHS="$(find $DEST -maxdepth 2 -type d -name $SRC'.????_??_??__??_??' -print)"
+    PREV_BKP_PATHS="$(find $DEST -maxdepth 2 -type d -name $SRC_BASE'.????_??_??__??_??' -print)"
+    echo $PREV_BKP_PATHS
     PREV_BKPS=""
 
     for BKP_PATH in $PREV_BKP_PATHS
@@ -80,5 +81,12 @@ do
     else
         echo rsync $RSYNC_OPT --link-dest=$DEST/$PREV_BKP $SRC $DEST/$NEXT_BKP
         rsync $RSYNC_OPT --link-dest="../$PREV_BKP" $SRC $DEST/$NEXT_BKP
+    fi
+
+    if [ $? -eq 0 ]
+    then 
+        printf "\033[1m\033[0;32m[dbkp]: Backed up $SRC as $NEXT_BKP. \033[0m\n"
+    else
+        printf "\033[1m\033[31m[dbkp]: Failed to back up $SRC. \033[0m\n"
     fi
 done
