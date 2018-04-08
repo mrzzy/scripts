@@ -16,7 +16,7 @@ Options:
 # Parse Arugments
 SOURCES=""
 DEST=""
-RSYNC_OPT="-ah --checksum --hard-links --progress --stats --verbose --delete"
+RSYNC_OPT="-ah --hard-links --progress --stats --verbose --delete"
 
 # Command Line Options
 while getopts "qhnz" OPT
@@ -75,11 +75,11 @@ do
     # Perform backup with RSYNC
     if [ -z $PREV_BKP ]
     then 
-        echo rsync $RSYNC_OPT $SRC $DEST/$NEXT_BKP
-        rsync $RSYNC_OPT $SRC $DEST/$NEXT_BKP
+        echo rsync $RSYNC_OPT $SRC/ $DEST/$NEXT_BKP
+        rsync $RSYNC_OPT $SRC/ $DEST/$NEXT_BKP
     else
-        echo rsync $RSYNC_OPT --link-dest=$DEST/$PREV_BKP $SRC $DEST/$NEXT_BKP
-        rsync $RSYNC_OPT --link-dest="../$PREV_BKP" $SRC $DEST/$NEXT_BKP
+        echo rsync $RSYNC_OPT --link-dest=$DEST/$PREV_BKP $SRC/ $DEST/$NEXT_BKP
+        rsync $RSYNC_OPT --link-dest="../$PREV_BKP" $SRC/ $DEST/$NEXT_BKP
     fi
 
     if [ $? -eq 0 ]
