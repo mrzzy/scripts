@@ -46,18 +46,21 @@ if ! $MODE_VERBOSE; then RSYNC_OPT="$RSYNC_OPT --quiet"; fi
 if [ $# -lt 2 ]; then printf "No sources and destination given...\n"; exit 1; fi
 while [ $# -gt 1 ]
 do
-    if [ -d $1 ] 
+    if [ ! -e  $SOURCES ]
     then 
-        # Back contents of source directory
-        SOURCES="$SOURCES $1/"
-    else 
-        # Back source file
-        SOURCES="$SOURCES $1"
+        printf "Invalid: Nonexistent sources given...\n"
+        exit 1
     fi
+
+    SOURCES="$SOURCES $1"
     shift
 done
 
-if [ $# -lt 1 ]; then printf "No destination given...\n"; exit 1; fi
+if [ $# -lt 1  ]
+then 
+    printf "No destination given...\n"
+    exit 1 
+fi
 DEST="$1"
 
 if $MODE_VERBOSE
