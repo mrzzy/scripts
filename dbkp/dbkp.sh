@@ -147,6 +147,14 @@ backup()
         # Incremental backup - hard link unchanged files, copy changed files
         rsync $RSYNC_OPT --link-dest="$DEST/$PREV_BKP" $SRC/ $DEST/$NEXT_BKP
     fi
+
+    local STATUS=$?
+    if [ $STATUS -ne 0 ]
+    then # Backup did not complete sucessfully
+        # Cleanup incomplete backup
+        if $MODE_VERBOSE; then printf "rm -rf $DEST/$NEXT_BKP\n"; fi
+        rm -rf $DEST/$NEXT_BKP
+    fi
     return $?
 }
 
@@ -259,12 +267,19 @@ for SRC in $SOURCES
 do
     # Perform backup of current
     backup "$SRC" "$DEST" "hourly"
+    if [ $? -ne 0 ]
+    then
+        printf "\033[1m\033[0;31m[dbkp]: Backup failed.\033[0m\n"
+        exit 1
+    else
+        printf "\033[1m\033[0;32m[dbkp]: Backup complete.\033[0m\n"
+    fi
 
     # Prune old backups
     prune "$SRC" "$DEST" "hourly" 24
     prune "$SRC" "$DEST" "daily" 20
     prune "$SRC" "$DEST" "monthly" 18
-
+    
     # Graduate backups
     graduate "$SRC" "$DEST" "hourly" # to daily
     graduate "$SRC" "$DEST" "daily" # to monthly
