@@ -56,7 +56,7 @@ do
     shift
 done
 
-if [ $# -lt 1  ]
+if [ $# -lt 1 -a ! -d $1  ]
 then 
     printf "No destination given...\n"
     exit 1 
