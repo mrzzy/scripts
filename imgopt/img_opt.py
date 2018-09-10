@@ -46,7 +46,7 @@ def parse_args(argv):
 # returns an optimised BytesIO object of image
 def optimise_img(img, quality):
     opt_img = io.BytesIO()
-    img.save(opt_img, optimize=True, quality=quality)
+    img.save(opt_img, format=img.format, optimize=True, quality=quality)
     
     return opt_img
     
@@ -58,13 +58,24 @@ def apply_optimisation(path, quality=85, output_dir=".", suffix="", verbose=Fals
     if verbose: print("optimising {}..".format(path))
     img = Image.open(path)
     opt_img = optimise_img(img, quality)
+
+    if verbose:
+        print("{} => {}".format(os.path.getsize(path), opt_img.getbuffer().nbytes))
     
     # Write optmised file to disk
-    opt_path = os.path.join(output_dir, path + suffix)
-    with open(path, "wb") as f:
-        f.write(opt_img.read())
+    opt_path = os.path.join(output_dir, os.path.basename(path) + suffix)
+    with open(opt_path, "wb") as f:
+        f.write(opt_img.getbuffer())
                         
 
+# Apply optmisation objects
+def apply(objective):
+    apply_optimisation(objective["path"],
+                       objective["quality"],
+                       objective["output_dir"],
+                       objective["suffix"],
+                       objective["verbose"])
+    
 if __name__ == "__main__":
     # Determine program configuration
     USAGE = """\
@@ -79,9 +90,16 @@ imgopt [-q <quality>] [-s <suffix>] [-h] <paths to imgs...>
     if options["help"]: 
         print(USAGE)
         sys.exit(0)
+
+    if not os.path.exists(options["output_dir"]):
+        os.mkdir(options["output_dir"])
+        
+    # Construct optmisation objectives (path + options)
+    objectives = [ dict(options) for p in image_paths ]
+    for objective, path in zip(objectives, image_paths):
+        objective["path"] = path
         
     # Apply image optmisisation concurrently on multiple processes
     if options["verbose"]: print("using {} processes.".format(cpu_count()))
     processes = Pool(cpu_count())
-    apply = (lambda path: apply_optimisation(path, **options))
-    processes.map(apply, image_paths)
+    processes.map(apply, objectives)
