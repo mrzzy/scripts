@@ -80,7 +80,14 @@ def rescale_img(img, scale, verbose=False):
 # Apply optimization at the image at the given path 
 # Writes the optimised image at the path constructed by combining the given output
 # directory, the given path, and the given path
-def apply_optimisation(path, quality=85, scale=100, output_dir=".", verbose=False):
+def apply_optimisation(objective):
+    # Load optmisisation objectives
+    path = objective["path"]
+    quality = objective["quality"]
+    scale = objective["scale"]
+    output_dir = objective["output_dir"]
+    verbose = objective["verbose"]
+
     img = Image.open(path)
     img_format = img.format
 
@@ -98,14 +105,6 @@ def apply_optimisation(path, quality=85, scale=100, output_dir=".", verbose=Fals
         f.write(opt_img.getbuffer())
                         
 
-# Apply optimisation objects
-def apply(objective):
-    apply_optimisation(objective["path"],
-                       objective["quality"],
-                       objective["scale"],
-                       objective["output_dir"],
-                       objective["verbose"])
-    
 if __name__ == "__main__":
     # Determine program configuration
     options, image_paths = parse_args(sys.argv)
@@ -122,4 +121,4 @@ if __name__ == "__main__":
     # Apply image optimisation concurrently on multiple processes
     if options["verbose"]: print("using {} processes.".format(cpu_count()))
     processes = Pool(cpu_count())
-    processes.map(apply, objectives)
+    processes.map(apply_optimisation, objectives)
