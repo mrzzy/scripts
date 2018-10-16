@@ -151,14 +151,14 @@ backup()
         rsync $RSYNC_OPT --link-dest="$DEST/$PREV_BKP" $SRC/ $DEST/$NEXT_BKP
     fi
 
-    local STATUS=$?
-    if [ $STATUS -ne 0 ]
+    local BKP_STATUS=$?
+    if [ $BKP_STATUS -ne 0 ]
     then # Backup did not complete sucessfully
         # Cleanup incomplete backup
         if $MODE_VERBOSE; then printf "rm -rf $DEST/$NEXT_BKP\n"; fi
         rm -rf $DEST/$NEXT_BKP
     fi
-    return $?
+    return $BKP_STATUS
 }
 
 # Usage: graduate <src> <dest> <tyoe>
@@ -268,9 +268,9 @@ prune()
 
 for SRC in $SOURCES
 do
-    # Perform backup of current
+    # Perform backup of current version
     backup "$SRC" "$DEST" "hourly"
-    if [ $? -ne 0 ]
+    if [ $? -ne 0 ] # Check if backup succeeded
     then
         printf "\033[1m\033[0;31m[dbkp]: Backup failed.\033[0m\n"
         exit 1
