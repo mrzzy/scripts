@@ -21,11 +21,12 @@ def parse_args(argv):
         "scale" : 100,
         "output_dir": "optimized",
         "verbose": False,
+        "progressive": False
     }
 
     # Read command line args into options
     args = argv[1:] # Skip program name
-    opts, image_paths = getopt(args, "vhs:q:p:o:")
+    opts, image_paths = getopt(args, "pvhs:q:o:")
     opts = dict(opts)
     
     if "-h" in opts: 
@@ -35,6 +36,7 @@ imgopt [-q <quality>] [-s <scale>] [-o <output_dir>] [-h] <paths to imgs...>
 -q <quality> - the quality to preserve in the optimized image as a pecentage
 -s <scale> - the amount of scaling applied to the optimised image as a percentage
 -o <output dir> - output image to output directory
+-p - converts the image to load progressively
 -v - verbose"""
         print(USAGE)
         sys.exit(0)
@@ -43,6 +45,7 @@ imgopt [-q <quality>] [-s <scale>] [-o <output_dir>] [-h] <paths to imgs...>
     if "-q" in opts: options["quality"] = int(opts["-q"])
     if "-s" in opts: options["scale"] = int(opts["-s"])
     if "-o" in opts: options["output_dir"] = opts["-o"]
+    if "-p" in opts: options["progressive"] = True
     
     
     # Check image paths
@@ -57,9 +60,10 @@ imgopt [-q <quality>] [-s <scale>] [-o <output_dir>] [-h] <paths to imgs...>
 # Optimise the given image object of the given format 
 # Downsample the optmised image based on the given quality percentage
 # returns an optimised BytesIO object of image
-def optimise_img(img, quality, img_format):
+def optimise_img(img, quality, img_format, progressive):
     opt_img = io.BytesIO()
-    img.save(opt_img, format=img_format, optimize=True, quality=quality)
+    img.save(opt_img, format=img_format, optimize=True, quality=quality, 
+             progressive=progressive)
     
     return opt_img
 
@@ -87,6 +91,7 @@ def apply_optimisation(objective):
     scale = objective["scale"]
     output_dir = objective["output_dir"]
     verbose = objective["verbose"]
+    progressive = objective["progressive"]
 
     img = Image.open(path)
     img_format = img.format
@@ -94,7 +99,7 @@ def apply_optimisation(objective):
     # Apply image optimisation
     if verbose: print("optimising {}..".format(path))
     scaled_img = rescale_img(img, scale, verbose)
-    opt_img = optimise_img(scaled_img, quality, img_format)
+    opt_img = optimise_img(scaled_img, quality, img_format, progressive)
 
     if verbose:
         print("{} => {}".format(os.path.getsize(path), opt_img.getbuffer().nbytes))
