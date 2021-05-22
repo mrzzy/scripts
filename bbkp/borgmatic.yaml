@@ -1,0 +1,190 @@
+#
+# scripts
+# borgmatic backup config
+#
+
+location:
+    # List of source directories to backup (required). Globs and
+    # tildes are expanded.
+    source_directories:
+        - /
+
+    # Paths to local or remote repositories (required). Tildes are
+    # expanded. Multiple repositories are backed up to in
+    # sequence. Borg placeholders can be used. See the output of
+    # "borg help placeholders" for details. See ssh_command for
+    # SSH options like identity file or port. If systemd service
+    # is used, then add local repository paths in the systemd
+    # service file to the ReadWritePaths list.
+    repositories:
+        - "${BORG_REPO}"
+
+    # Stay in same file system (do not cross mount points).
+    # Defaults to false. But when a database hook is used, the
+    # setting here is ignored and one_file_system is considered
+    # true.
+    one_file_system: true
+    
+    # Mode in which to operate the files cache. See
+    # http://borgbackup.readthedocs.io/en/stable/usage/create.html
+    # for details. Defaults to "ctime,size,inode".
+    # files_cache: ctime,size,inode
+
+    # Any paths matching these patterns are excluded from backups.
+    # Globs and tildes are expanded. See the output of "borg help
+    # patterns" for more details.
+    exclude_patterns:
+      - '/home/*/.cache/*'    
+      - '/home/*/.mozilla/firefox/*/Cache' 
+      - '/home/*/.local/share/Trash' 
+      - '/var/run/*' 
+      - '/var/lock/*' 
+      - '/var/tmp/*' 
+      - '/var/cache/apt/archives/*'  
+      # exclude to prevent leaking passphrase
+      - '/etc/borgmatic/config.yaml'
+
+    # Exclude directories that contain a CACHEDIR.TAG file. See
+    # http://www.brynosaurus.com/cachedir/spec.html for details.
+    # Defaults to false.
+    exclude_caches: true
+
+    # Exclude directories that contain a file with the given
+    # filenames. Defaults to not set.
+    exclude_if_present:
+      - .nobackup
+
+# Repository storage options. See
+# https://borgbackup.readthedocs.io/en/stable/usage/create.html and
+# https://borgbackup.readthedocs.io/en/stable/usage/general.html for
+# details.
+storage:
+    # Passphrase to unlock the encryption key with. Only use on
+    # repositories that were initialized with
+    # passphrase/repokey/keyfile encryption. Quote the value if it
+    # contains punctuation, so it parses correctly. And backslash
+    # any quote or backslash literals as well. Defaults to not
+    # set.
+    encryption_passphrase: "${BORG_PASSPHRASE}"
+
+    # Number of seconds between each checkpoint during a
+    # long-running backup. See
+    # https://borgbackup.readthedocs.io/en/stable/faq.html
+    # for details. Defaults to checkpoints every 1800 seconds (30
+    # minutes).
+    # checkpoint_interval: 1800
+    #
+    # Type of compression to use when creating archives. See
+    # http://borgbackup.readthedocs.io/en/stable/usage/create.html
+    # for details. Defaults to "lz4".
+    compression: zstd
+
+    # Umask to be used for borg create. Defaults to 0077.
+    # umask: 0077
+
+    # Name of the archive. Borg placeholders can be used. See the
+    # output of "borg help placeholders" for details. Defaults to
+    # "{hostname}-{now:%Y-%m-%dT%H:%M:%S.%f}". If you specify this
+    # option, you must also specify a prefix in the retention
+    # section to avoid accidental pruning of archives with a
+    # different archive name format. And you should also specify a
+    # prefix in the consistency section as well.
+    archive_name_format: '{hostname}-{utcnow}'
+    
+    # Additional options to pass directly to particular Borg
+    # commands, handy for Borg options that borgmatic does not yet
+    # support natively. Note that borgmatic does not perform any
+    # validation on these options. Running borgmatic with
+    # "--verbosity 2" shows the exact Borg command-line
+    # invocation.
+    # extra_borg_options:
+        # Extra command-line options to pass to "borg init".
+        # init: --make-parent-dirs
+
+        # Extra command-line options to pass to "borg prune".
+        # prune: --save-space
+
+        # Extra command-line options to pass to "borg create".
+        # create: --no-files-cache
+
+        # Extra command-line options to pass to "borg check".
+        # check: --save-space
+
+# Retention policy for how many backups to keep in each category. See
+# https://borgbackup.readthedocs.io/en/stable/usage/prune.html for
+# details. At least one of the "keep" options is required for pruning
+# to work. To skip pruning entirely, run "borgmatic create" or "check"
+# without the "prune" action. See borgmatic documentation for details.
+retention:
+    # Keep all archives within this time interval.
+    keep_within: 3H
+    
+    # Number of hourly archives to keep.
+    keep_hourly: 24
+
+    # Number of daily archives to keep.
+    keep_daily: 7
+
+    # Number of weekly archives to keep.
+    keep_weekly: 8
+
+    # Number of monthly archives to keep.
+    keep_monthly: 12
+
+    # Number of yearly archives to keep.
+    keep_yearly: 4
+
+    # When pruning, only consider archive names starting with this
+    # prefix.  Borg placeholders can be used. See the output of
+    # "borg help placeholders" for details. Defaults to
+    # "{hostname}-". Use an empty value to disable the default.
+    prefix: "{hostname}-"
+
+# Consistency checks to run after backups. See
+# https://borgbackup.readthedocs.io/en/stable/usage/check.html and
+# https://borgbackup.readthedocs.io/en/stable/usage/extract.html for
+# details.
+consistency:
+    # List of one or more consistency checks to run: "repository",
+    # "archives", "data", and/or "extract". Defaults to
+    # "repository" and "archives". Set to "disabled" to disable
+    # all consistency checks. "repository" checks the consistency
+    # of the repository, "archives" checks all of the archives,
+    # "data" verifies the integrity of the data within the
+    # archives, and "extract" does an extraction dry-run of the
+    # most recent archive. Note that "data" implies "archives".
+    checks:
+        - repository
+        - archives
+
+    # Paths to a subset of the repositories in the location
+    # section on which to run consistency checks. Handy in case
+    # some of your repositories are very large, and so running
+    # consistency checks on them would take too long. Defaults to
+    # running consistency checks on all repositories configured in
+    # the location section.
+    # check_repositories:
+        # - user@backupserver:sourcehostname.borg
+
+    # Restrict the number of checked archives to the last n.
+    # Applies only to the "archives" check. Defaults to checking
+    # all archives.
+    # check_last: 3
+
+    # When performing the "archives" check, only consider archive
+    # names starting with this prefix. Borg placeholders can be
+    # used. See the output of "borg help placeholders" for
+    # details. Defaults to "{hostname}-". Use an empty value to
+    # disable the default.
+    prefix: "{hostname}"
+
+# Options for customizing borgmatic's own output and logging.
+#hooks:
+    # Apply color to console output. Can be overridden with
+    # --no-color command-line flag. Defaults to true.
+    # color: false
+    # Healthchecks ping URL or UUID to notify when a backup
+    # begins, ends, or errors. Create an account at
+    # https://healthchecks.io if you'd like to use this service.
+    # See borgmatic monitoring documentation for details.
+    #healthchecks: https://hc-ping.com/your-uuid-here
