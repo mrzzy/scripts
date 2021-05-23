@@ -154,7 +154,7 @@ consistency:
     # archives, and "extract" does an extraction dry-run of the
     # most recent archive. Note that "data" implies "archives".
     checks:
-        - repository
+        - disabled
 
     # Paths to a subset of the repositories in the location
     # section on which to run consistency checks. Handy in case
