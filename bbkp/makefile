@@ -27,6 +27,8 @@ SYSTEMCTL:=systemctl
 .PHONY: install uninstall
 
 install: requirements.txt /etc/borgmatic/config.yaml /etc/systemd/system/borgmatic.service /etc/systemd/system/borgmatic.timer
+	# see https://borgbackup.readthedocs.io/en/latest/installation.html#dependencies 
+	# for additional dependencies if pip install borgbackup fails
 	$(PIP) install -r $<
 	validate-borgmatic-config
 	$(SYSTEMCTL) daemon-reload 
